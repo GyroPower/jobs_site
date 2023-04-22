@@ -1,16 +1,18 @@
+import os
+import sys
 from typing import Any
 from typing import Generator
-from ..db.models import jobs
-from ..security.oauth2 import login_user
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from ..core.config import settings
-import sys
-import os
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+
+from ..core.config import settings
+from ..db.models import jobs
+from ..security.oauth2 import login_user
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -50,7 +52,7 @@ def db_session() -> Generator[SessionTesting, Any, None]:
 
 
 @pytest.fixture(scope="function")
-def client(app: FastAPI, db_session) -> Generator[TestClient, Any, None]:
+def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None]:
     def get_test_db():
         try:
             yield db_session
@@ -59,9 +61,7 @@ def client(app: FastAPI, db_session) -> Generator[TestClient, Any, None]:
 
     app.dependency_overrides[get_db] = get_test_db
 
-    with TestClient(app=app) as client:
-        print
-        yield client
+    yield TestClient(app=app)
 
 
 @pytest.fixture(scope="function")
@@ -88,7 +88,7 @@ def authorized_client(client: TestClient, token):
     return client
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def create_jobs(test_user, db_session: Session):
     data = [
         {
