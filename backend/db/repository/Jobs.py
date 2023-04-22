@@ -2,9 +2,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from backend.db.models import jobs
-from backend.schemas.Jobs import job_create
-from backend.schemas.User import User_response
+from ...db.models import jobs
+from ...schemas.Jobs import job_create
 
 
 def create_new_job(owner_id: int, new_job: job_create, db: Session):
@@ -58,6 +57,6 @@ def r_delete_job(job_id: int, user_id: int, db: Session):
     if not job.first():
         return False
 
-    job.delete()
+    job.delete(synchronize_session=False)
     db.commit()
     return True

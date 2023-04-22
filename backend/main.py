@@ -1,9 +1,13 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends
+from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from .apis import base
-from .apis.version1.auth import auth_router
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+
+from .apis import base
+from .apis.version1.route_auth import auth_router
 from .core.config import settings
 from .db.base import Base
 from .db.database import engine

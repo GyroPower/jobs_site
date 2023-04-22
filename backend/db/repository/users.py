@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from backend.db.models.users import User
-from backend.schemas.User import User_Create
-from backend.security.hashing import Hasher
+from ...db.models.users import User
+from ...schemas.User import User_Create
+from ...security.hashing import Hasher
 
 
 def create_new_user(new_user: User_Create, db: Session):
@@ -14,5 +14,12 @@ def create_new_user(new_user: User_Create, db: Session):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    return user
+
+
+def get_user_by_email(a_email: str, db: Session):
+
+    user = db.query(User).filter(User.email == a_email).first()
 
     return user

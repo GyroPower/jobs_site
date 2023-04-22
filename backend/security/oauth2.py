@@ -1,13 +1,19 @@
-from datetime import datetime, timedelta
-
-from ..db.models import users
-from ..core.config import settings
-from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status, Request
-from ..db.database import get_db
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime
+from datetime import timedelta
 from typing import Annotated
+
+from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import Request
+from fastapi import status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt
+from jose import JWTError
 from sqlalchemy.orm import Session
+
+from ..core.config import settings
+from ..db.database import get_db
+from ..db.models import users
 from ..schemas import Token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -16,6 +22,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 class login_user:
     @staticmethod
     def get_token(request: Request) -> oauth2_scheme:
+
         return request.cookies.get("Authorization")
 
     @staticmethod

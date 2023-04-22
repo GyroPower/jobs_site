@@ -12,7 +12,11 @@ from sqlalchemy.orm import sessionmaker
 
 from ..core.config import settings
 from ..db.models import jobs
+from ..schemas.User import User_Create
 from ..security.oauth2 import login_user
+from .utils.Jobs import create_various_jobs
+from .utils.Users import authentication_cookie
+from .utils.Users import create_test_user
 
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,7 +52,10 @@ def db_session() -> Generator[SessionTesting, Any, None]:
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     session = SessionTesting()
-    yield session
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 @pytest.fixture(scope="function")
@@ -65,60 +72,19 @@ def client(app: FastAPI, db_session: Session) -> Generator[TestClient, Any, None
 
 
 @pytest.fixture(scope="function")
-def test_user(client: TestClient):
-    user = {"username": "user1", "email": "other@example.com", "password": "1234"}
-
-    res = client.post("/users/register/", json=user)
-    user_res = res.json()
-    user_res["password"] = user["password"]
-
-    return user_res
-
-
-@pytest.fixture(scope="function")
-def token(test_user):
-    return login_user.create_access_token(data={"user_id": test_user["id"]})
-
-
-@pytest.fixture(scope="function")
-def authorized_client(client: TestClient, token):
-
-    client.cookies.set("Authorization", token)
+def authorized_client(client: TestClient, test_user):
+    cookie = authentication_cookie(client, test_user["email"], test_user["password"])
+    client.cookies.set("Authorization", cookie)
 
     return client
 
 
 @pytest.fixture(scope="function")
-def create_jobs(test_user, db_session: Session):
-    data = [
-        {
-            "title": "company1",
-            "company": "doogle",
-            "company_url": "www.doogle.com",
-            "location": "USA,NY",
-            "description": "python",
-        },
-        {
-            "title": "company2",
-            "company": "foogle",
-            "company_url": "www.foogle.com",
-            "location": "USA,LA",
-            "description": "python",
-        },
-        {
-            "title": "company3",
-            "company": "poogle",
-            "company_url": "www.poogle.com",
-            "location": "USA,NY",
-            "description": "python",
-        },
-    ]
+def create_jobs(db_session: Session, test_user):
 
-    def create_jobs_(job):
-        return jobs.Jobs(**job, owner_id=test_user["id"])
+    return create_various_jobs(test_user=test_user, db_session=db_session)
 
-    jobs_map = map(create_jobs_, data)
-    jobs_list = list(jobs_map)
-    db_session.add_all(jobs_list)
-    db_session.commit()
-    return db_session.query(jobs.Jobs).all()
+
+@pytest.fixture(scope="function")
+def test_user(db_session: Session):
+    return create_test_user(email=settings.test_email, db=db_session)
