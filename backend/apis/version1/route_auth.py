@@ -20,13 +20,7 @@ from backend.security.oauth2 import login_user
 auth_router = APIRouter()
 
 
-def authenticate_user(email: str, db: Session):
-    user = get_user_by_email(a_email=email, db=db)
-
-    return user
-
-
-@auth_router.post("/")
+@auth_router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)],
@@ -53,5 +47,7 @@ async def login_for_access_token(
         data={"user_id": user.id}, expires_delta=access_token_expires
     )
 
-    response.set_cookie(key="Authorization", value=access_token)
-    return {"msg": "success"}
+    response.set_cookie(
+        key="access_token", value=f"Bearer {access_token}", httponly=True
+    )
+    return {"access_token": access_token, "token_type": "bearer"}

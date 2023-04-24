@@ -19,13 +19,12 @@ def create_new_job(owner_id: int, new_job: job_create, db: Session):
 def get_jobs_list(db: Session, id: Optional[str | None] = None):
 
     if id is None:
-        posts = db.query(jobs.Jobs).filter(jobs.Jobs.is_active == True).all()
+        posts = db.query(jobs.Jobs).filter(jobs.Jobs.is_active == True)
     else:
         posts = (
             db.query(jobs.Jobs)
             .filter(jobs.Jobs.is_active == True)
             .filter(jobs.Jobs.id == id)
-            .all()
         )
 
     return posts

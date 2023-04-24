@@ -6,18 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .apis import base
+from .apis.base import api_router as apis_router
 from .apis.version1.route_auth import auth_router
 from .core.config import settings
 from .db.base import Base
 from .db.database import engine
+from .webapss.base import apps_router
 
 # to get a random secret_key run this command in linux:
 # openssl rand -hex 32
 
 
 def include_routers(app: FastAPI):
-    app.include_router(base.api_router)
+    app.include_router(apis_router)
+    app.include_router(apps_router)
 
 
 def conf_static(app: FastAPI):

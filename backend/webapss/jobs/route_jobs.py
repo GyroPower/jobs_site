@@ -23,6 +23,27 @@ from backend.security.oauth2 import login_user
 router = APIRouter()
 
 
+templates = Jinja2Templates(directory="backend/templates")
+
+
+@router.get("/")
+async def home(request: Request, db: Session = Depends(get_db), msg: str = None):
+    jobs = get_jobs_list(db)
+
+    return templates.TemplateResponse(
+        "general_pages/home_page.html",
+        {"request": request, "jobs": jobs.all(), "msg": msg},
+    )
+
+
+@router.get("/detail/{id}")
+async def job_detail(id: int, request: Request, db: Session = Depends(get_db)):
+    job = get_jobs_list(db, id)
+    return templates.TemplateResponse(
+        "jobs/detail.html", {"request": request, "job": job.first()}
+    )
+
+
 @router.post("/create", response_model=Jobs.job_show)
 async def create_job(
     job: Jobs.job_create,
@@ -31,16 +52,6 @@ async def create_job(
 ):
     id = current_user.id
     return create_new_job(id, job, db)
-
-
-@router.get("/", response_model=List[Jobs.job_show])
-async def get_jobs(id: Optional[str | None] = None, db: Session = Depends(get_db)):
-    jobs = get_jobs_list(db, id)
-
-    if not jobs:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
-    return jobs
 
 
 @router.put("/update/{id}")

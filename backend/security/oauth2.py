@@ -6,7 +6,6 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi import status
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from jose import JWTError
 from sqlalchemy.orm import Session
@@ -15,16 +14,12 @@ from ..core.config import settings
 from ..db.database import get_db
 from ..db.models import users
 from ..schemas import Token
+from backend.apis.utils import OAuth2PasswordBearerWithCookie
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/login/token")
 
 
 class login_user:
-    @staticmethod
-    def get_token(request: Request) -> oauth2_scheme:
-
-        return request.cookies.get("Authorization")
-
     @staticmethod
     def create_access_token(data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
@@ -40,7 +35,7 @@ class login_user:
 
     @staticmethod
     async def get_current_user(
-        token: Annotated[str, Depends(get_token)],
+        token: Annotated[str, Depends(oauth2_scheme)],
         db: Annotated[Session, Depends(get_db)],
     ):
         credentials_exception = HTTPException(

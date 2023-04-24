@@ -1,0 +1,41 @@
+{% extends "shared/base.html"%}
+
+{% block title %}
+    <title>Login</title>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div>
+            <h5 class="display-5">Login to JobBoard</h5>
+            <div class="text-danger font-weight-bold">
+                {% for error in errors %}
+                    <li>{{errors}}</li>
+                {% endfor %}
+            </div>
+
+            <div class="text-succes font-weight-bold">
+                {% if msg %}
+                <div class="badge bg-success text-wrap font-weight-bold">
+                    {{msg}}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+
+        <div class="row my-5">
+            <form method="post">
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input type="text" required placeholder="Your Email" name="email", value="{{email}}">
+                </div>
+                <div class="mb-3">
+                    <label>Password</label>
+                    <input type="password" required placeholder="Choose a secure password" name="password" value="{{password}}">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
