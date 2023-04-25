@@ -15,6 +15,7 @@ from backend.db.models import jobs
 from backend.db.repository.Jobs import create_new_job
 from backend.db.repository.Jobs import get_jobs_list
 from backend.db.repository.Jobs import r_delete_job
+from backend.db.repository.Jobs import r_search_jobs
 from backend.db.repository.Jobs import r_update_job
 from backend.schemas import Jobs
 from backend.schemas import User
@@ -41,6 +42,15 @@ async def get_jobs(id: Optional[str | None] = None, db: Session = Depends(get_db
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
     return jobs
+
+
+@router.get("/autocomplete")
+def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db)):
+    jobs = r_search_jobs(term, db=db)
+    job_titles = []
+    for job in jobs:
+        job_titles.append(job.title)
+    return job_titles
 
 
 @router.put("/update/{id}")
@@ -77,4 +87,4 @@ async def delete_job(
             detail=f"""Job with id {id} not found or don't belong to user
                             {current_user.username}""",
         )
-    return {"msg": "success"}
+    return {"detail": "successfully deleted"}

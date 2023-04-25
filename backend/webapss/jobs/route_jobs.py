@@ -15,7 +15,9 @@ from backend.db.database import get_db
 from backend.db.models import jobs
 from backend.db.repository.Jobs import create_new_job
 from backend.db.repository.Jobs import get_jobs_list
+from backend.db.repository.Jobs import get_own_jobs
 from backend.db.repository.Jobs import r_delete_job
+from backend.db.repository.Jobs import r_search_jobs
 from backend.db.repository.Jobs import r_update_job
 from backend.schemas import Jobs
 from backend.schemas import User
@@ -43,6 +45,16 @@ async def job_detail(id: int, request: Request, db: Session = Depends(get_db)):
     job = get_jobs_list(db, id)
     return templates.TemplateResponse(
         "jobs/detail.html", {"request": request, "job": job.first()}
+    )
+
+
+@router.get("/search/")
+def search_job(request: Request, query: str, db: Session = Depends(get_db)):
+    jobs = r_search_jobs(query, db)
+
+    return templates.TemplateResponse(
+        "general_pages/home_page.html",
+        {"request": request, "jobs": jobs.all(), "msg": None},
     )
 
 
@@ -99,6 +111,24 @@ async def update_job(
     return {"msg": "success"}
 
 
+@router.get("/delete-job")
+def show_jobs_to_delete(
+    request: Request,
+    current_user: User.User_response = Depends(login_user.get_current_user),
+    db: Session = Depends(get_db),
+):
+    list_jobs = get_own_jobs(db=db, owner_id=current_user.id)
+    msg = None
+
+    if not list_jobs:
+        msg = "No Jobs created"
+
+    return templates.TemplateResponse(
+        name="jobs/jobs_to_delete.html",
+        context={"request": request, "jobs": list_jobs, "msg": msg},
+    )
+
+
 @router.delete("/delete/{id}")
 async def delete_job(
     id: int,
@@ -113,4 +143,4 @@ async def delete_job(
             detail=f"""Job with id {id} not found or don't belong to user
                             {current_user.username}""",
         )
-    return {"msg": "success"}
+    return {"detail": "successfully deleted"}

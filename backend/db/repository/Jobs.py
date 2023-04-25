@@ -6,6 +6,11 @@ from ...db.models import jobs
 from ...schemas.Jobs import job_create
 
 
+def r_search_jobs(query: str, db: Session):
+    job = db.query(jobs.Jobs).filter(jobs.Jobs.title.contains(query))
+    return job
+
+
 def create_new_job(owner_id: int, new_job: job_create, db: Session):
     job = jobs.Jobs(**new_job.dict(), owner_id=owner_id)
 
@@ -28,6 +33,10 @@ def get_jobs_list(db: Session, id: Optional[str | None] = None):
         )
 
     return posts
+
+
+def get_own_jobs(db: Session, owner_id: int):
+    return db.query(jobs.Jobs).filter(jobs.Jobs.owner_id == owner_id).all()
 
 
 def r_update_job(job_id: int, user_id: int, job_update: job_create, db: Session):
