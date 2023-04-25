@@ -1,0 +1,42 @@
+{% extends "shared/base.html" %}
+
+{% block title %}
+    <title>Job Detail</title>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <h5 class="display-5">Create a job in JobBoard</h5>
+            <div class="text-danger font-weight-bold">
+                {% for error in errors %}
+                    <li>{{error}}</li>
+                {% endfor %}
+
+            </div>
+        </div>
+
+    <div class="row my-5">
+        <form method="POST">
+            <div class="mb-3">
+                <input type="text" required class="form-control" name="title" value="{{title}}" placeholder="Title">
+            </div>
+            <div class="mb-3">
+                <input type="text" required class="form-control" required placeholder="Company name" name="company" value="{{company}}" class="form-control">
+            </div>
+            <div class="mb-3">
+                <input type="text" required class="form-control" required placeholder="Company url here" value="{{company_url}}" name="company_url" class="form-control">
+            </div>
+            <div class="mb-3">
+                <input type="text" required class="form-control" required placeholder="Job location (optional)" value="{{location}}" name="job_location" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="exapleFormControlTextarea1" class="form-label">Description</label>
+                <textarea class="form-control" required name="description" id="exampleFormControlTextarea1" rows="3">{{description}}</textarea>
+                <div id="help" class="form-text">Please provide complete Job description, requirements, perks and benefits.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    </div>
+{% endblock %}

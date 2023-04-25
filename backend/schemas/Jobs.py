@@ -11,7 +11,6 @@ class job_base(BaseModel):
     company_url: Optional[str] = None
     location: Optional[str] = "Remote"
     description: Optional[str] = None
-    date_posted: Optional[date] = datetime.now().date()
     owner_id: str
 
 
@@ -19,8 +18,10 @@ class job_create(BaseModel):
 
     title: str
     company: str
+    company_url: str
     location: str
     description: str
+    date_posted: Optional[date] = datetime.now().date()
 
 
 class job_show(job_base):

@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Request
+from fastapi import responses
 from fastapi import status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -19,6 +20,7 @@ from backend.db.repository.Jobs import r_update_job
 from backend.schemas import Jobs
 from backend.schemas import User
 from backend.security.oauth2 import login_user
+from backend.webapss.jobs.form import job_post_form
 
 router = APIRouter()
 
@@ -44,14 +46,37 @@ async def job_detail(id: int, request: Request, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/create", response_model=Jobs.job_show)
+@router.get("/create")
+def create_job(request: Request):
+    return templates.TemplateResponse("jobs/create_job.html", {"request": request})
+
+
+@router.post("/create")
 async def create_job(
-    job: Jobs.job_create,
+    request: Request,
     current_user: User.User_response = Depends(login_user.get_current_user),
     db: Session = Depends(get_db),
 ):
-    id = current_user.id
-    return create_new_job(id, job, db)
+    form = job_post_form(request)
+
+    await form.load_data()
+
+    if await form.is_valid():
+        job = Jobs.job_create(**form.__dict__)
+
+        try:
+            job = create_new_job(owner_id=current_user.id, new_job=job, db=db)
+
+            return responses.RedirectResponse(
+                f"/detail/{job.id}", status_code=status.HTTP_302_FOUND
+            )
+        except Exception as e:
+            print(e)
+            form.__dict__.get("errors").append(
+                "You might not be logged in, In case problem persists please contact us"
+            )
+            return templates.TemplateResponse("jobs/create_job.html", form.__dict__)
+    return templates.TemplateResponse("jobs/create_job.html", form.__dict__)
 
 
 @router.put("/update/{id}")
